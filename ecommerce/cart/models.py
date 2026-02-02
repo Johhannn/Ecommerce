@@ -5,8 +5,11 @@ from ecommerce_app.models import Product
 # Create your models here.
 
 
+from django.conf import settings
+
 class Cart(models.Model):
     cart_id = models.CharField(max_length=250, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     date_added = models.DateField(auto_now_add=True)
 
     class Meta:

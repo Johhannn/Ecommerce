@@ -34,3 +34,30 @@ def product_details(request, c_slug, product_slug):
     except Exception as e:
         raise e
     return render(request, 'product.html', {'product': product})
+
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from .serializers import CategorySerializer, ProductSerializer
+
+class CategoryListAPIView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
+
+class ProductListAPIView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        category_slug = self.request.query_params.get('category', None)
+        if category_slug:
+            queryset = queryset.filter(category__slug=category_slug)
+        return queryset
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'slug'
