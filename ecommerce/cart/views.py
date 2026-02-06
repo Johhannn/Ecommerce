@@ -342,6 +342,8 @@ Thank you for shopping with us!
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+from django.db.models import Count
+
 class OrdersListAPIView(APIView):
     """API to get user's order history"""
     permission_classes = []
@@ -350,11 +352,11 @@ class OrdersListAPIView(APIView):
         try:
             # Get orders for authenticated user or by session
             if request.user.is_authenticated:
-                orders = Order.objects.filter(user=request.user, status='paid').order_by('-created_at')
+                orders = Order.objects.filter(user=request.user, status='paid').select_related('payment').annotate(items_count=Count('items')).order_by('-created_at')
             else:
                 # For anonymous users, try to get orders from session cart
                 cart = _get_cart(request)
-                orders = Order.objects.filter(cart=cart, status='paid').order_by('-created_at')
+                orders = Order.objects.filter(cart=cart, status='paid').select_related('payment').annotate(items_count=Count('items')).order_by('-created_at')
             
             orders_data = []
             for order in orders:
@@ -367,7 +369,7 @@ class OrdersListAPIView(APIView):
                     }
                 
                 # Get item count
-                item_count = order.items.count()
+                item_count = order.items_count
                 
                 orders_data.append({
                     'id': order.id,
@@ -407,7 +409,7 @@ class OrderDetailAPIView(APIView):
                     'product_id': item.product_id,
                     'product_name': item.product_name,
                     'product_price': str(item.product_price),
-                    'product_image': item.product_image,
+                    'product_image': request.build_absolute_uri(item.product_image) if item.product_image else None,
                     'quantity': item.quantity,
                     'subtotal': str(item.subtotal)
                 }

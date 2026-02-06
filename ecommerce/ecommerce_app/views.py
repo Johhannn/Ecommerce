@@ -48,7 +48,7 @@ class CategoryListAPIView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
 class ProductListAPIView(generics.ListAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().select_related('category')
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
 
@@ -94,7 +94,7 @@ class ProductListAPIView(generics.ListAPIView):
         return queryset
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().select_related('category')
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
     lookup_field = 'slug'
@@ -121,7 +121,7 @@ class ProductSearchSuggestionsAPIView(APIView):
                 'name': p.name,
                 'slug': p.slug,
                 'price': str(p.price),
-                'image': p.image.url if p.image else None
+                'image': request.build_absolute_uri(p.image.url) if p.image else None
             }
             for p in products
         ]
@@ -151,7 +151,7 @@ class WishlistAPIView(APIView):
                         'name': item.product.name,
                         'slug': item.product.slug,
                         'price': str(item.product.price),
-                        'image': item.product.image.url if item.product.image else None,
+                        'image': request.build_absolute_uri(item.product.image.url) if item.product.image else None,
                         'available': item.product.available,
                         'stock': item.product.stock,
                         'category': item.product.category.name
@@ -413,7 +413,7 @@ class ProductReviewsAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, product_id):
-        reviews = ReviewRating.objects.filter(product_id=product_id, status=True).order_by('-updated_at')
+        reviews = ReviewRating.objects.filter(product_id=product_id, status=True).select_related('user', 'product').order_by('-updated_at')
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
@@ -428,7 +428,7 @@ class AdminReviewListAPIView(generics.ListAPIView):
         if not self.request.user.is_staff:
             return ReviewRating.objects.none()
 
-        queryset = ReviewRating.objects.all().order_by('-created_at')
+        queryset = ReviewRating.objects.all().select_related('user', 'product').order_by('-created_at')
         
         # Search (User, Product, Subject, Review)
         search = self.request.query_params.get('search', None)

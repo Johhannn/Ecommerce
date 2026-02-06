@@ -63,7 +63,7 @@ class AdminProductListAPIView(APIView):
         from django.db.models import Q
         from django.core.paginator import Paginator, EmptyPage
 
-        queryset = Product.objects.all().order_by('id')
+        queryset = Product.objects.all().select_related('category').order_by('id')
 
         # 1. Search
         search_query = request.query_params.get('search', '')
@@ -106,7 +106,7 @@ class AdminProductListAPIView(APIView):
                 'price': p.price,
                 'stock': p.stock,
                 'category': p.category.name if p.category else 'Uncategorized',
-                'image': p.image.url if p.image else None
+                'image': request.build_absolute_uri(p.image.url) if p.image else None
             })
         
         return Response({
@@ -238,7 +238,7 @@ class AdminOrderListAPIView(APIView):
         from django.db.models import Q
         from django.core.paginator import Paginator, EmptyPage
 
-        queryset = Order.objects.all().order_by('-created_at')
+        queryset = Order.objects.all().select_related('user').annotate(items_count=Count('items')).order_by('-created_at')
 
         # 1. Search
         search_query = request.query_params.get('search', '')
@@ -276,7 +276,7 @@ class AdminOrderListAPIView(APIView):
                 'amount': order.amount,
                 'status': order.status,
                 'created_at': order.created_at,
-                'items_count': order.items.count()
+                'items_count': order.items_count
             })
         
         return Response({
