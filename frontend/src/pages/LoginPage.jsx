@@ -146,6 +146,11 @@ const LoginPage = () => {
                                         />
                                     </div>
 
+                                    <div className="d-flex justify-content-end mb-3">
+                                        <Link to="/forgot-password" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>
+                                            Forgot Password?
+                                        </Link>
+                                    </div>
                                     <button
                                         type="submit"
                                         className="btn w-100 py-3 mb-4"

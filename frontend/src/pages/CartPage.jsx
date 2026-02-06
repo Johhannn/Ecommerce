@@ -313,7 +313,8 @@ const CartPage = () => {
                                 </span>
                             </div>
 
-                            <button
+                            <Link
+                                to="/checkout"
                                 className="btn btn-lg w-100 py-3 mb-3"
                                 style={{
                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -322,12 +323,13 @@ const CartPage = () => {
                                     borderRadius: '50px',
                                     fontWeight: '600',
                                     fontSize: '22px',
-                                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.35)'
+                                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.35)',
+                                    textDecoration: 'none'
                                 }}
                             >
                                 <i className="bi bi-credit-card me-2" style={{ fontSize: '22px' }}></i>
                                 Proceed to Checkout
-                            </button>
+                            </Link>
 
                             <Link
                                 to="/"

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import RecentlyViewed from '../components/RecentlyViewed';
 
 const HomePage = () => {
     const [products, setProducts] = useState([]);
@@ -9,6 +11,7 @@ const HomePage = () => {
     const [updatingProduct, setUpdatingProduct] = useState(null);
     const { slug } = useParams();
     const { cartItems, addToCart, removeFromCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
 
     // Fetch products
     useEffect(() => {
@@ -149,6 +152,31 @@ const HomePage = () => {
                                     >
                                         ${product.price}
                                     </div>
+
+                                    {/* Wishlist Button */}
+                                    <button
+                                        className="btn rounded-circle d-flex justify-content-center align-items-center"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            toggleWishlist(product.id);
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '15px',
+                                            left: '15px',
+                                            width: '40px',
+                                            height: '40px',
+                                            background: 'white',
+                                            border: 'none',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                                            color: isInWishlist(product.id) ? '#dc3545' : '#ccc',
+                                            transition: 'all 0.3s ease',
+                                            zIndex: 10
+                                        }}
+                                        title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                                    >
+                                        <i className={`bi ${isInWishlist(product.id) ? 'bi-heart-fill' : 'bi-heart'}`} style={{ fontSize: '1.3rem' }}></i>
+                                    </button>
                                 </div>
                             </Link>
 
@@ -168,96 +196,111 @@ const HomePage = () => {
                                     </h5>
                                 </Link>
 
-                                <div className="d-grid">
-                                    {cartItems[product.id] ? (
-                                        // Quantity Controls
-                                        <div
-                                            className="d-flex align-items-center justify-content-center"
-                                            style={{
-                                                background: '#f1f3f5',
-                                                borderRadius: '50px',
-                                                padding: '8px'
-                                            }}
-                                        >
-                                            <button
-                                                className="btn rounded-circle d-flex justify-content-center align-items-center"
-                                                style={{
-                                                    width: '45px',
-                                                    height: '45px',
-                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                    border: 'none',
-                                                    color: 'white',
-                                                    fontSize: '1.5rem'
-                                                }}
-                                                onClick={() => handleRemoveFromCart(product.id)}
-                                                disabled={updatingProduct === product.id}
-                                            >
-                                                <i className="bi bi-dash-lg"></i>
-                                            </button>
-                                            <span
-                                                className="px-4 fw-bold"
-                                                style={{
-                                                    fontSize: '1.3rem',
-                                                    minWidth: '60px',
-                                                    textAlign: 'center',
-                                                    color: '#1a1a2e'
-                                                }}
-                                            >
-                                                {updatingProduct === product.id ? (
-                                                    <span className="spinner-border spinner-border-sm"></span>
-                                                ) : (
-                                                    cartItems[product.id]
-                                                )}
-                                            </span>
-                                            <button
-                                                className="btn rounded-circle d-flex justify-content-center align-items-center"
-                                                style={{
-                                                    width: '45px',
-                                                    height: '45px',
-                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                    border: 'none',
-                                                    color: 'white',
-                                                    fontSize: '1.5rem'
-                                                }}
-                                                onClick={() => handleAddToCart(product.id)}
-                                                disabled={updatingProduct === product.id}
-                                            >
-                                                <i className="bi bi-plus-lg"></i>
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        // Add to Cart Button
+                                {product.stock <= 0 ? (
+                                    <button
+                                        className="btn py-3 w-100"
+                                        disabled
+                                        style={{
+                                            background: '#f8d7da',
+                                            color: '#721c24',
+                                            border: '1px solid #f5c6cb',
+                                            borderRadius: '50px',
+                                            fontSize: '1.1rem',
+                                            fontWeight: '600',
+                                            cursor: 'not-allowed'
+                                        }}
+                                    >
+                                        <i className="bi bi-x-circle me-2"></i>
+                                        Out of Stock
+                                    </button>
+                                ) : cartItems[product.id] ? (
+                                    // Quantity Controls
+                                    <div
+                                        className="d-flex align-items-center justify-content-center"
+                                        style={{
+                                            background: '#f1f3f5',
+                                            borderRadius: '50px',
+                                            padding: '8px'
+                                        }}
+                                    >
                                         <button
-                                            className="btn py-3"
-                                            onClick={() => handleAddToCart(product.id)}
-                                            disabled={updatingProduct === product.id}
+                                            className="btn rounded-circle d-flex justify-content-center align-items-center"
                                             style={{
-                                                background: updatingProduct === product.id
-                                                    ? '#ccc'
-                                                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                color: 'white',
+                                                width: '45px',
+                                                height: '45px',
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                                 border: 'none',
-                                                borderRadius: '50px',
-                                                fontSize: '1.1rem',
-                                                fontWeight: '600',
-                                                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-                                                transition: 'all 0.3s ease'
+                                                color: 'white',
+                                                fontSize: '1.5rem'
+                                            }}
+                                            onClick={() => handleRemoveFromCart(product.id)}
+                                            disabled={updatingProduct === product.id}
+                                        >
+                                            <i className="bi bi-dash-lg"></i>
+                                        </button>
+                                        <span
+                                            className="px-4 fw-bold"
+                                            style={{
+                                                fontSize: '1.3rem',
+                                                minWidth: '60px',
+                                                textAlign: 'center',
+                                                color: '#1a1a2e'
                                             }}
                                         >
                                             {updatingProduct === product.id ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-2"></span>
-                                                    Adding...
-                                                </>
+                                                <span className="spinner-border spinner-border-sm"></span>
                                             ) : (
-                                                <>
-                                                    <i className="bi bi-cart-plus me-2"></i>
-                                                    Add to Cart
-                                                </>
+                                                cartItems[product.id]
                                             )}
+                                        </span>
+                                        <button
+                                            className="btn rounded-circle d-flex justify-content-center align-items-center"
+                                            style={{
+                                                width: '45px',
+                                                height: '45px',
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                border: 'none',
+                                                color: 'white',
+                                                fontSize: '1.5rem'
+                                            }}
+                                            onClick={() => handleAddToCart(product.id)}
+                                            disabled={updatingProduct === product.id || (product.stock > 0 && cartItems[product.id] >= product.stock)}
+                                        >
+                                            <i className="bi bi-plus-lg"></i>
                                         </button>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    // Add to Cart Button
+                                    <button
+                                        className="btn py-3"
+                                        onClick={() => handleAddToCart(product.id)}
+                                        disabled={updatingProduct === product.id}
+                                        style={{
+                                            background: updatingProduct === product.id
+                                                ? '#ccc'
+                                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '50px',
+                                            fontSize: '1.1rem',
+                                            fontWeight: '600',
+                                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        {updatingProduct === product.id ? (
+                                            <>
+                                                <span className="spinner-border spinner-border-sm me-2"></span>
+                                                Adding...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="bi bi-cart-plus me-2"></i>
+                                                Add to Cart
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -299,6 +342,9 @@ const HomePage = () => {
                     </Link>
                 </div>
             )}
+
+            {/* Recently Viewed Section */}
+            <RecentlyViewed />
         </div>
     );
 };

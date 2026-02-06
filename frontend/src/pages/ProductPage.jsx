@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import ReviewList from '../components/ReviewList';
+import ReviewForm from '../components/ReviewForm';
+import StarRating from '../components/StarRating';
 
 const ProductPage = () => {
     const { slug } = useParams();
@@ -9,7 +13,30 @@ const ProductPage = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+
+    // Review State
+    const [reviews, setReviews] = useState([]);
+    const [averageRating, setAverageRating] = useState(0);
+
     const { cartItems, addToCart, removeFromCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
+
+    const fetchReviews = async (productId) => {
+        try {
+            const response = await api.get(`shop/api/reviews/${productId}/`);
+            setReviews(response.data);
+
+            // Calculate average rating
+            if (response.data.length > 0) {
+                const total = response.data.reduce((acc, curr) => acc + curr.rating, 0);
+                setAverageRating(total / response.data.length);
+            } else {
+                setAverageRating(0);
+            }
+        } catch (error) {
+            console.error("Error fetching reviews", error);
+        }
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -17,6 +44,9 @@ const ProductPage = () => {
                 const response = await api.get(`shop/api/products/${slug}/`);
                 setProduct(response.data);
                 setLoading(false);
+                addToRecentlyViewed(response.data);
+                // Fetch reviews once product is loaded
+                fetchReviews(response.data.id);
             } catch (error) {
                 console.error("Error fetching product", error);
                 setLoading(false);
@@ -24,6 +54,31 @@ const ProductPage = () => {
         };
         fetchProduct();
     }, [slug]);
+
+    const addToRecentlyViewed = (product) => {
+        const recentlyViewed = JSON.parse(localStorage.getItem('recently_viewed')) || [];
+        const existingIndex = recentlyViewed.findIndex(p => p.id === product.id);
+
+        if (existingIndex !== -1) {
+            recentlyViewed.splice(existingIndex, 1);
+        }
+
+        recentlyViewed.unshift({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: product.price,
+            image: product.image,
+            category: product.category
+        });
+
+        // Keep only last 4 items
+        if (recentlyViewed.length > 4) {
+            recentlyViewed.pop();
+        }
+
+        localStorage.setItem('recently_viewed', JSON.stringify(recentlyViewed));
+    };
 
     const handleAddToCart = async () => {
         setUpdating(true);
@@ -187,6 +242,24 @@ const ProductPage = () => {
                                 Only {product.stock} left!
                             </span>
                         )}
+
+                        {/* Wishlist Button */}
+                        <button
+                            className="btn rounded-circle d-flex justify-content-center align-items-center ms-auto"
+                            onClick={() => toggleWishlist(product.id)}
+                            style={{
+                                width: '50px',
+                                height: '50px',
+                                background: '#fff',
+                                border: '1px solid #e9ecef',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                                color: isInWishlist(product.id) ? '#dc3545' : '#ccc',
+                                transition: 'all 0.3s ease'
+                            }}
+                            title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                            <i className={`bi ${isInWishlist(product.id) ? 'bi-heart-fill' : 'bi-heart'}`} style={{ fontSize: '1.5rem' }}></i>
+                        </button>
                     </div>
 
                     {/* Description */}
@@ -392,6 +465,39 @@ const ProductPage = () => {
                                 <p className="mb-0 mt-2" style={{ fontSize: '16px', color: '#6c757d' }}>Easy Returns</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="row mt-5 pt-5 border-top">
+                <div className="col-lg-12 mb-5">
+                    <h2 className="fw-bold mb-4" style={{ color: '#1a1a2e' }}>Customer Reviews</h2>
+                    <div className="d-flex align-items-center gap-3 mb-5">
+                        <div className="d-flex align-items-center gap-2">
+                            <span className="fw-bold" style={{ fontSize: '48px', color: '#1a1a2e' }}>
+                                {averageRating.toFixed(1)}
+                            </span>
+                            <div className="d-flex flex-column">
+                                <StarRating rating={averageRating} size="24px" />
+                                <span className="text-muted" style={{ fontSize: '14px' }}>
+                                    {reviews.length} reviews
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-lg-7">
+                    <ReviewList reviews={reviews} />
+                </div>
+
+                <div className="col-lg-5">
+                    <div className="sticky-top" style={{ top: '100px' }}>
+                        <ReviewForm
+                            productId={product.id}
+                            onReviewSubmitted={() => fetchReviews(product.id)}
+                        />
                     </div>
                 </div>
             </div>

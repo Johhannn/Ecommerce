@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import SearchBar from './SearchBar';
 
 const Navbar = () => {
     const [categories, setCategories] = useState([]);
     const { itemCount } = useCart();
+    const { wishlistCount } = useWishlist();
     const [token, setToken] = useState(localStorage.getItem('access_token'));
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
@@ -92,7 +95,11 @@ const Navbar = () => {
                     <span className="navbar-toggler-icon"></span>
                 </button>
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul className="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-5">
+                    {/* Search Bar */}
+                    <div className="mx-lg-4 my-3 my-lg-0" style={{ flex: '1', maxWidth: '500px' }}>
+                        <SearchBar />
+                    </div>
+                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item dropdown">
                             <a
                                 className="nav-link dropdown-toggle text-white px-4 py-2"
@@ -139,6 +146,28 @@ const Navbar = () => {
                                         }}
                                     >
                                         {itemCount}
+                                    </span>
+                                )}
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link text-white px-4 py-2 d-flex align-items-center"
+                                to="/wishlist"
+                                style={{ fontSize: '32px' }}
+                            >
+                                <i className="bi bi-heart me-2" style={{ fontSize: '32px', color: '#e74c3c' }}></i>
+                                Wishlist
+                                {wishlistCount > 0 && (
+                                    <span
+                                        className="badge rounded-pill ms-2"
+                                        style={{
+                                            background: '#e74c3c',
+                                            fontSize: '20px',
+                                            padding: '0.5em 0.8em'
+                                        }}
+                                    >
+                                        {wishlistCount}
                                     </span>
                                 )}
                             </Link>
@@ -197,6 +226,16 @@ const Navbar = () => {
                                             >
                                                 <i className="bi bi-bag me-3" style={{ fontSize: '20px', color: '#667eea' }}></i>
                                                 My Orders
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                className="dropdown-item py-3 px-3 d-flex align-items-center"
+                                                to="/addresses"
+                                                style={{ fontSize: '18px', borderRadius: '10px' }}
+                                            >
+                                                <i className="bi bi-geo-alt me-3" style={{ fontSize: '20px', color: '#667eea' }}></i>
+                                                Address Book
                                             </Link>
                                         </li>
                                         <li>
