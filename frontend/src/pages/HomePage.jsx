@@ -118,6 +118,7 @@ const HomePage = () => {
                                             src={product.image}
                                             className="card-img-top"
                                             alt={product.name}
+                                            loading="lazy"
                                             style={{
                                                 height: '280px',
                                                 objectFit: 'cover',
