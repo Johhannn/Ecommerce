@@ -65,10 +65,28 @@ A full-stack e-commerce application built with Django (backend) and React (front
     npm run dev
     ```
 
+## Technology Stack
+
+-   **Backend**: Django 5, Django Rest Framework (DRF), SimpleJWT, Razorpay
+-   **Frontend**: React.js, Vite, Bootstrap 5, Axios, React Router Dom
+-   **Database**: SQLite (default), PostgreSQL (compatible)
+
 ## Features
 
--   **User Authentication**: Register, Login, Profile management
--   **Product Management**: Admin interface to Add, Edit, Delete products
--   **Shopping Cart**: Add items, view summary, checkout
--   **Orders**: Order history, status tracking
--   **Search & Filter**: Find products by name, category, price
+### User Features
+-   **Authentication**: User Registration, Login (JWT), Password Reset.
+-   **Product Browsing**: Search, Filter by Category/Price, Pagination.
+-   **Product Details**: Image gallery, stock status, related products.
+-   **Shopping Cart**: Persistent cart (session/database), real-time updates.
+-   **Checkout**: Address management, Razorpay payment gateway integration.
+-   **Orders**: View order history, download invoices, track status.
+-   **Wishlist**: Save favorite items for later.
+-   **User Profile**: Manage saving addresses and personal details.
+-   **Reviews**: Rate and review products.
+
+### Admin Features
+-   **Dashboard**: Sales overview, recent orders, revenue charts.
+-   **Product Management**: Add, Edit, Delete products with image support.
+-   **Order Management**: Update order status (Pending, Shipped, Delivered).
+-   **User Management**: View customer details.
+
