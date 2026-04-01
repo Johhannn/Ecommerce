@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/',
+    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,8 @@ api.interceptors.response.use(
 
                 if (refreshToken) {
                     // Try to refresh the token
-                    const response = await axios.post('http://127.0.0.1:8000/accounts/login/refresh/', {
+                    // Use relative path so it uses the instance's baseURL
+                    const response = await api.post('accounts/login/refresh/', {
                         refresh: refreshToken
                     });
 
